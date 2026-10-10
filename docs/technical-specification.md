@@ -1,29 +1,31 @@
 # Flux Protocol Smart Contract Technical Specification
 
+中文：[technical-specification.zh.md](./technical-specification.zh.md)
+
 ## 1. Project Goal
 
-实现 Flux Protocol：一个支持 NFT（ERC-721）与 FT（ERC-20）双向转换，并为 NFT 提供 ERC-6551 Token Bound Account 和多资产奖励能力的协议。
+Implement Flux Protocol: a system supporting bidirectional conversion between NFT (ERC-721) and FT (ERC-20), with ERC-6551 Token Bound Accounts and multi-asset rewards for NFTs.
 
-协议要求：
+Protocol requirements:
 
-- 固定 Asset 总量。
-- Genesis Auction（CCA）。
-- Genesis NFT。
-- ERC-20 流动性。
-- 动态手续费。
-- Fee Engine。
-- 四层 Vault。
-- Trait Engine。
-- ERC-6551 Registry 与 Token Bound Account。
-- Reward Strategy、Reward Vault 与 Reward Asset Registry。
-- Genesis NFT 原子化 Burn Settlement。
-- 使用 Foundry 开发。
-- 使用 OpenZeppelin 合约库。
+- Fixed total asset supply.
+- Genesis Auction (CCA).
+- Genesis NFT.
+- ERC-20 liquidity.
+- Dynamic fees.
+- Fee Engine.
+- Four-layer vaults.
+- Trait Engine.
+- ERC-6551 Registry and Token Bound Account.
+- Reward Strategy, Reward Vault, and Reward Asset Registry.
+- Atomic Genesis NFT burn settlement.
+- Developed with Foundry.
+- Uses OpenZeppelin contract libraries.
 
-技术栈：
+Tech stack:
 
-- **Solidity**：`>=0.8.26`
-- **Framework**：Foundry
+- **Solidity**: `>=0.8.26`
+- **Framework**: Foundry
 
 ---
 
@@ -76,17 +78,17 @@ deploy/
 
 ### GenesisAuction
 
-GenesisAuction 负责 Genesis Auction，功能包括：
+GenesisAuction runs the Genesis auction:
 
-- 创建 Auction。
-- 接收 ETH。
-- 处理 CCA Bid。
-- 完成 Price Discovery。
-- Finalize Auction。
-- 分发 Credit。
-- 初始化 LP。
+- Create auction.
+- Receive ETH.
+- Process CCA bids.
+- Complete price discovery.
+- Finalize auction.
+- Distribute Credit.
+- Initialize LP.
 
-状态定义：
+State:
 
 ```solidity
 enum AuctionState {
@@ -96,7 +98,7 @@ enum AuctionState {
 }
 ```
 
-主要接口：
+Main interfaces:
 
 ```solidity
 createAuction()
@@ -109,9 +111,9 @@ initializeLP()
 
 ### CreditManager
 
-CreditManager 负责管理 Genesis Credit。Credit 不可再次发行；Genesis 完成以后，其总量固定为 `5,000`。
+CreditManager manages Genesis Credit. Credit cannot be re-issued; after Genesis completes, total supply is fixed at `5,000`.
 
-接口：
+Interfaces:
 
 ```solidity
 claimNFT()
@@ -121,7 +123,7 @@ burnCredit()
 
 ### DynamicNFT
 
-DynamicNFT 是统一的 ERC-721 Collection，同时承载 Genesis NFT 与普通 NFT。两者通过 `genesis` 标记区分，包含 Trait、Metadata、Random Mint 和 ERC-6551 Account 地址查询。
+DynamicNFT is the unified ERC-721 collection for Genesis and normal NFTs, distinguished by the `genesis` flag, with Trait, metadata, random mint, and ERC-6551 account address lookup.
 
 ```solidity
 struct NFTData {
@@ -131,7 +133,7 @@ struct NFTData {
 }
 ```
 
-接口：
+Interfaces:
 
 ```solidity
 mint()
@@ -143,13 +145,13 @@ isGenesis()
 account(uint256 tokenId)
 ```
 
-所有 NFT 都支持 ERC-6551，但只有 Genesis NFT 参与协议奖励。Genesis NFT Burn 后，Genesis Right 永久消失，重新 Mint 也不会恢复。
+All NFTs support ERC-6551, but only Genesis NFTs participate in protocol rewards. After Genesis NFT burn, Genesis Right is gone permanently; re-mint does not restore it.
 
 ### ERC6551Registry / FluxAccount
 
-ERC6551Registry 根据 NFT 合约、tokenId、Chain ID、Salt 和 Account Implementation 确定性创建 TBA。FluxAccount 验证当前 NFT Owner，并允许其管理账户资产。Mint 时不强制部署账户；首次 Claim 或使用时再创建。
+ERC6551Registry deterministically creates TBAs from NFT contract, tokenId, chain ID, salt, and account implementation. FluxAccount validates the current NFT owner and lets them manage account assets. Mint does not require deploying the account; creation happens on first claim or use.
 
-主要接口：
+Main interfaces:
 
 ```solidity
 account(address nft, uint256 tokenId)
@@ -159,7 +161,7 @@ execute(address target, uint256 value, bytes calldata data)
 
 ### AccountManager
 
-AccountManager 是协议操作 TBA 的受控入口，负责 Claim、Sweep 和 Genesis Burn Settlement。它只能自动处理 RewardAssetRegistry 中登记的资产。
+AccountManager is the controlled protocol entry for TBAs: claim, sweep, and Genesis burn settlement. It only auto-handles assets registered in RewardAssetRegistry.
 
 ```solidity
 ensureAccount(uint256 tokenId)
@@ -170,19 +172,19 @@ settleBeforeBurn(uint256 tokenId, address recipient)
 
 ### FluxToken
 
-FluxToken 是 ERC-20，固定兑换规则为：
+FluxToken is ERC-20 with fixed conversion:
 
 ```text
 1 NFT = 10,000 FLUX
 ```
 
-FluxToken 继承 `ERC20Permit`，不包含 Votes / Snapshot 扩展。
+FluxToken extends `ERC20Permit` without Votes / Snapshot extensions.
 
 ### ConversionEngine
 
-ConversionEngine 是协议最核心的模块，负责 `NFT ⇄ FT` 转换。
+ConversionEngine is the core module for `NFT ⇄ FT` conversion.
 
-接口：
+Interfaces:
 
 ```solidity
 nftToFT()
@@ -192,26 +194,26 @@ previewReward()
 currentRatio()
 ```
 
-ConversionEngine 必须保证 Asset 总量守恒。
+ConversionEngine must preserve total asset conservation.
 
-Genesis NFT 的 `nftToFT()` 必须按以下顺序原子化执行：
+Genesis NFT `nftToFT()` must execute atomically in this order:
 
-1. 锁定 Burn 发起时的 NFT Owner。
-2. 结算该 tokenId 尚未 Claim 的已归属奖励。
-3. 通过 AccountManager 将 TBA 中所有登记资产 Sweep 给该 Owner。
-4. 确认登记资产结算完成。
-5. Burn NFT 并归还 Trait。
-6. Mint 10,000 FLUX 给 Owner。
-7. 永久销毁 Genesis Right，并减少 `activeGenesisSupply`。
-8. 更新 AssetRegistry 并 Emit event。
+1. Lock NFT owner at burn initiation.
+2. Settle unclaimed vested rewards for that tokenId.
+3. Via AccountManager, sweep all registered TBA assets to that owner.
+4. Confirm registered asset settlement complete.
+5. Burn NFT and return Trait.
+6. Mint 10,000 FLUX to owner.
+7. Permanently destroy Genesis Right and decrement `activeGenesisSupply`.
+8. Update AssetRegistry and emit event.
 
-任一步失败都必须 Revert 整个交易。未登记资产不在自动结算范围内，协议不得将其视为已经清空。
+Any step failure must revert the entire transaction. Unregistered assets are outside auto-settlement; the protocol must not treat them as cleared.
 
 ---
 
 ## 4. Genesis Flow
 
-初始化 `10,000 Asset Units`，拆分为：
+Initialize `10,000 Asset Units`, split as:
 
 ```text
 10,000 Asset Units
@@ -219,13 +221,13 @@ Genesis NFT 的 `nftToFT()` 必须按以下顺序原子化执行：
 └── 5,000 → LP Reserve
 ```
 
-LP Reserve 自动 Mint `50,000,000 FLUX`。Auction 结束后，使用 Auction ETH 和 `50,000,000 FLUX` 创建 Uniswap LP：
+LP Reserve auto-mints `50,000,000 FLUX`. After the auction, auction ETH and `50,000,000 FLUX` create Uniswap LP:
 
 ```text
 Auction ETH + 50,000,000 FLUX → Uniswap LP
 ```
 
-LP 永久锁定，Auction 用户获得 Credit。
+LP is permanently locked; auction participants receive Credit.
 
 ---
 
@@ -245,13 +247,13 @@ FLUX
 Random NFT
 ```
 
-Genesis NFT 被 Burn 前必须执行 TBA Settlement；Burn 后将永久失去 Genesis Right。普通 NFT 也可以拥有 TBA，但不参与 Genesis 奖励。
+TBA settlement is required before Genesis NFT burn; after burn, Genesis Right is lost forever. Normal NFTs may also have TBAs but do not participate in Genesis rewards.
 
 ---
 
 ## 6. Trait Engine
 
-Trait 不直接写在代码中，而是保存在 Storage 中并随机生成，包括：
+Traits are not hard-coded; they live in storage and are generated randomly, including:
 
 ```text
 Background
@@ -261,7 +263,7 @@ Hair
 Accessory
 ```
 
-Trait Generator 支持 Weighted Random，并提供以下接口：
+Trait Generator supports weighted random with interfaces:
 
 ```solidity
 generate()
@@ -269,19 +271,19 @@ reroll()
 randomSeed()
 ```
 
-Trait 随机数通过 `IRandomProvider` 注入；部署时可选用 `ChainlinkVRFRandomProvider`、`SyncVRFRandomProvider` 或 `MockRandomProvider`。
+Trait randomness is injected via `IRandomProvider`; deployment may use `ChainlinkVRFRandomProvider`, `SyncVRFRandomProvider`, or `MockRandomProvider`.
 
 ---
 
 ## 7. Fee Engine
 
-协议的所有手续费统一进入 Fee Engine，来源包括：
+All protocol fees enter Fee Engine from:
 
-1. Swap Fee。
-2. Marketplace Fee。
-3. NFT / FT Conversion Fee。
+1. Swap fees.
+2. Marketplace fees.
+3. NFT / FT conversion fees.
 
-Fee Engine 负责统一分发这些收入。Genesis 分配先进入 Reward Strategy，而不是直接向 Holder 钱包推送 ETH：
+Fee Engine distributes revenue uniformly. Genesis allocation goes to Reward Strategy first, not direct ETH push to holder wallets:
 
 ```text
 Fee Engine
@@ -301,7 +303,7 @@ Claim → ERC-6551 TBA
 
 ## 8. Vaults
 
-Fee 分配至四个 Vault：
+Fees split across four vaults:
 
 ```text
 Fee
@@ -311,13 +313,13 @@ Fee
 └── Protocol Vault
 ```
 
-各 Vault 的分配百分比允许由 Governance 修改。
+Vault percentages may be changed by governance.
 
 ### Liquidity Vault
 
-Liquidity Vault 用于持续增加 FLUX/ETH LP。
+Liquidity Vault continuously adds FLUX/ETH LP.
 
-接口：
+Interfaces:
 
 ```solidity
 addLiquidity()
@@ -326,9 +328,9 @@ pendingLiquidity()
 
 ### Genesis Vault
 
-Genesis Vault 为 Genesis NFT 提供多资产永久现金流。Genesis NFT 被 Burn 后将永久失去未来收益，收益按当前有效 Genesis NFT 数量平均分配。系统使用 `accRewardPerShare + rewardDebt` 实现 Pull-based Accounting，不允许在收入发生时遍历全部 NFT。
+Genesis Vault provides permanent multi-asset cash flow for Genesis NFTs. After burn, future yield is lost forever; remaining Genesis NFTs share proportionally. Uses `accRewardPerShare + rewardDebt` pull-based accounting; no full NFT iteration on inflow.
 
-接口：
+Interfaces:
 
 ```solidity
 deposit(address rewardAsset, uint256 amount)
@@ -337,11 +339,11 @@ claimAllRegistered(uint256 tokenId)
 pending(uint256 tokenId, address rewardAsset)
 ```
 
-Claim 的接收地址必须是 tokenId 对应的 TBA。Genesis NFT 转让后，未来收益权与 TBA 控制权一并转移。
+Claim recipient must be the tokenId’s TBA. After Genesis NFT transfer, future yield and TBA control move with the new owner.
 
 ### Reward Vault
 
-Reward Vault 持有尚未 Claim 的奖励资产，并保证每种资产的余额不低于已记账负债。
+Reward Vault holds unclaimed reward assets and ensures balance per asset covers booked liabilities.
 
 ```solidity
 depositFromStrategy(address rewardAsset, uint256 amount)
@@ -352,7 +354,7 @@ liability(address rewardAsset)
 
 ### Reward Strategy Manager
 
-Reward Strategy Manager 通过白名单 Adapter 将输入资产转换为 Reward Asset。当前实现包含 `HoldETHStrategy`；其他策略通过 `IRewardStrategy` 与 Adapter 扩展接入。
+Reward Strategy Manager converts input assets to reward assets via whitelisted adapters. Current implementation includes `HoldETHStrategy`; others extend via `IRewardStrategy` and adapters.
 
 ```solidity
 executeStrategy(bytes32 strategyId, uint256 amountIn, uint256 minAmountOut)
@@ -360,11 +362,11 @@ setStrategy(bytes32 strategyId, address adapter)
 pauseStrategy(bytes32 strategyId)
 ```
 
-所有 Strategy 必须检查最大滑点、最小输出、Deadline、输入/输出资产白名单和调用权限。不可拆分 NFT 不使用普通按份额会计，必须由独立的抽取、拍卖或 NFT Vault Strategy 处理。
+All strategies must check max slippage, min output, deadline, input/output whitelists, and caller permissions. Non-fungible NFT rewards do not use ordinary per-share accounting; they require separate draw, auction, or NFT vault strategies.
 
 ### Reward Asset Registry
 
-Reward Asset Registry 保存协议支持的奖励资产以及 Burn Settlement 所需的枚举信息。
+Reward Asset Registry stores supported reward assets and enumeration needed for burn settlement.
 
 ```solidity
 registerAsset(address asset, AssetType assetType, address settlementAdapter)
@@ -373,20 +375,20 @@ isRegistered(address asset)
 registeredAssets()
 ```
 
-自动 Claim 与 Burn Settlement 仅覆盖 RewardAssetRegistry 登记的 Native ETH/WETH 与 ERC-20。用户自行转入 TBA 的未登记资产由用户自行管理。
+Auto claim and burn settlement only cover native ETH/WETH and ERC-20 registered in RewardAssetRegistry. Unregistered assets users send to TBA are user-managed.
 
 ### Balance Vault
 
-Balance Vault 负责协议平衡，目标比例为：
+Balance Vault maintains protocol balance with target ratio:
 
 ```text
-NFT：60%～70%
-FT： 30%～40%
+NFT: 60%–70%
+FT:  30%–40%
 ```
 
-Reward 根据 Treasury 余额动态计算，不得超发。
+Rewards are computed dynamically from treasury balance and must not over-issuance.
 
-接口：
+Interfaces:
 
 ```solidity
 reward()
@@ -397,9 +399,9 @@ currentTarget()
 
 ### Protocol Vault
 
-Protocol Vault 用于接收协议收入，主要用于协议维护，并支持 MultiSig。
+Protocol Vault receives protocol revenue for maintenance, with MultiSig support.
 
-接口：
+Interfaces:
 
 ```solidity
 withdraw()
@@ -410,29 +412,29 @@ setRecipient()
 
 ## 9. Dynamic Balance Engine
 
-Dynamic Balance Engine 负责维护 NFT/FT 比例，目标区间为：
+Dynamic Balance Engine maintains NFT/FT ratio with target band:
 
 ```text
-NFT：60%～70%
-FT： 30%～40%
+NFT: 60%–70%
+FT:  30%–40%
 ```
 
-协议维护 Neutral Zone，例如 FT 占 30%～40% 时，双向转换均采用低费率。超过该区间后，动态提高对应方向的转换成本。
+The protocol maintains a neutral zone (e.g. FT 30%–40%) with low fees both ways; outside the zone, conversion cost increases dynamically on the imbalanced direction.
 
 ---
 
 ## 10. Fee Curve
 
-Fee Curve 采用连续函数，不使用阶梯函数。
+Fee Curve uses continuous functions, not step functions.
 
-接口：
+Interfaces:
 
 ```solidity
 calculateFee()
 calculateReward()
 ```
 
-输入：
+Inputs:
 
 ```text
 Current FT Ratio
@@ -440,42 +442,42 @@ Current Treasury
 Target Ratio
 ```
 
-输出：
+Outputs:
 
 ```text
 Fee
 Reward
 ```
 
-Fee Curve 支持未来升级。
+Fee Curve supports future upgrades.
 
 ---
 
 ## 11. Metadata
 
-NFT Metadata 完全上链，SVG 在链上生成，并支持 Trait Renderer。
+NFT metadata is fully on-chain; SVG is generated on-chain with Trait Renderer support.
 
 ---
 
 ## 12. Security
 
-- 所有状态变更采用 Checks-Effects-Interactions 模式。
-- 使用 ReentrancyGuard。
-- ERC-20 支持 Permit。
-- ERC-721 使用 ERC721A（如适用）或 OpenZeppelin ERC721。
-- 权限控制使用 AccessControl。
-- 暂停机制使用 Pausable。
-- FluxAccount 必须验证 NFT 当前 Owner，防止旧 Owner 在转让后继续执行。
-- AccountManager 只允许 ConversionEngine 和 GenesisVault 调用受控结算接口。
-- Burn Settlement 必须防重入，并在外部转账前锁定 Owner 与结算状态。
-- Reward Strategy 必须使用资产白名单、滑点保护、Deadline 和最小输出检查。
-- 核心合约以非可升级部署为主。
+- All state changes use Checks-Effects-Interactions.
+- Use ReentrancyGuard.
+- ERC-20 supports Permit.
+- ERC-721 uses ERC721A (where applicable) or OpenZeppelin ERC721.
+- AccessControl for permissions.
+- Pausable for pause mechanism.
+- FluxAccount must verify current NFT owner to prevent prior owner executing after transfer.
+- AccountManager allows controlled settlement only from ConversionEngine and GenesisVault.
+- Burn settlement must be reentrancy-safe and lock owner/settlement state before external transfers.
+- Reward strategies require asset whitelist, slippage protection, deadline, and min-output checks.
+- Core contracts deploy non-upgradeable by default.
 
 ---
 
 ## 13. Events
 
-必须包含以下事件：
+Required events:
 
 ```solidity
 AuctionCreated
@@ -501,40 +503,40 @@ FeeDistributed
 
 ## 14. Testing
 
-Foundry 测试覆盖率要求高于 95%，测试范围包括：
+Foundry test coverage target above 95%, including:
 
-- Genesis。
-- CCA。
-- Random Trait。
-- NFT Burn。
-- NFT Mint。
-- FT Mint。
-- FT Burn。
-- Fee。
-- Vault。
-- Reward。
-- ERC-6551 Account 权限与确定性地址。
-- 多 Reward Asset Accounting。
-- Claim 到 TBA。
-- Genesis Burn 原子化 Settlement。
-- Reward Strategy 滑点和恶意 Adapter。
-- LP。
+- Genesis.
+- CCA.
+- Random Trait.
+- NFT burn.
+- NFT mint.
+- FT mint.
+- FT burn.
+- Fee.
+- Vault.
+- Reward.
+- ERC-6551 account permissions and deterministic addresses.
+- Multi reward asset accounting.
+- Claim to TBA.
+- Atomic Genesis burn settlement.
+- Reward strategy slippage and malicious adapters.
+- LP.
 
-Invariant Test 必须保证 Asset 总量永远为 `10,000`，并覆盖以下附加不变量：
+Invariant tests must keep total assets at `10,000` and cover:
 
-- Burn 后 Genesis Right 永远不可恢复。
-- Burn Settlement 后，所有登记资产已经转给 Burn 发起时的 Owner。
-- RewardVault 的资产余额始终覆盖对应会计负债。
-- Reward Strategy 不得输出未登记资产。
-- 收入分配与 Claim 不得随 NFT 总量执行无界循环。
+- Genesis Right unrecoverable after burn.
+- After burn settlement, all registered assets transferred to owner at burn initiation.
+- RewardVault balances always cover booked liabilities per asset.
+- Reward strategies must not output unregistered assets.
+- Revenue distribution and claim must not unbounded-loop by total NFT count.
 
-Fuzz Test 应覆盖转换、连续 Burn、连续 Mint 和连续 Swap，并始终保证 Supply 正确。
+Fuzz tests should cover conversion, consecutive burn/mint, and consecutive swap while preserving correct supply.
 
 ---
 
 ## 15. Deployment
 
-使用 Foundry Script，并按照以下顺序部署：
+Use Foundry scripts in this order:
 
 ```text
 Vaults
@@ -564,16 +566,15 @@ Initialize
 
 ## 16. Development Rules
 
-1. 所有核心参数必须通过 Config 管理，不得 Hardcode。
-2. 所有比例必须支持 Governance 修改。
-3. 所有数学运算统一由 Math Library 处理。
-4. 所有随机数统一由 Trait Generator 处理。
-5. 所有 Fee 统一由 Fee Engine 处理。
-6. 所有资产转换统一由 Conversion Engine 处理。
-7. 任何模块都不得直接修改 ERC-20、ERC-721 或 Supply，只能通过 Conversion Engine 统一管理。
-8. Reward 分发必须采用 Pull-based Accounting，禁止向全部 NFT 批量推送资产。
-9. Reward Strategy 必须通过 Adapter 接入，不得把外部 Swap 逻辑写进 FeeEngine 或 ConversionEngine。
-10. TBA 自动结算只能遍历 RewardAssetRegistry，不得假设能够枚举任意 Token。
-11. Genesis NFT Burn 必须在同一交易内完成 Pending Reward 结算、登记资产 Sweep、NFT Burn、FLUX Mint 和 Genesis Right 销毁。
-12. 不可拆分 NFT 奖励必须使用独立 Strategy，不得按 ERC-20 会计逻辑分配。
-
+1. All core parameters via config, no hardcoding.
+2. All ratios governable.
+3. All math via math libraries.
+4. All randomness via Trait Generator.
+5. All fees via Fee Engine.
+6. All asset conversion via Conversion Engine.
+7. No module may directly mutate ERC-20, ERC-721, or supply except through Conversion Engine.
+8. Reward distribution must use pull-based accounting; no batch push to all NFTs.
+9. Reward strategies via adapters only; no external swap logic inside FeeEngine or ConversionEngine.
+10. TBA auto-settlement may only iterate RewardAssetRegistry; do not assume arbitrary token enumeration.
+11. Genesis NFT burn must complete pending reward settlement, registered sweep, NFT burn, FLUX mint, and Genesis Right destruction in one transaction.
+12. Non-fungible NFT rewards need independent strategies; do not allocate like ERC-20 accounting.

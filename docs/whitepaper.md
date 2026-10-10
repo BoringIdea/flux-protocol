@@ -1,10 +1,12 @@
 # Flux Protocol Whitepaper
 
+中文：[whitepaper.zh.md](./whitepaper.zh.md)
+
 > Draft v2
 
 ## 1. Vision
 
-传统 NFT（ERC-721）最大的限制不是资产本身，而是缺乏流动性。ERC-20 已经形成了完整的 DeFi 基础设施，包括：
+The main limitation of traditional NFTs (ERC-721) is not the asset itself but lack of liquidity. ERC-20 already has full DeFi infrastructure, including:
 
 - DEX
 - AMM
@@ -15,13 +17,13 @@
 - Tax Token
 - Yield Farming
 
-而 NFT 仍然主要停留在收藏、挂单交易和拍卖等场景。因此，Flux Protocol 希望创造一种新的资产标准，使数字资产能够在 NFT（收藏态）与 FT（流动态）之间自由切换，让 NFT 真正进入 DeFi。Flux 代表资产在不同形态之间持续流动和变化；协议品牌独立于具体 NFT IP，从而可以在未来支持更多 Collection。
+NFTs remain largely in collecting, listing, and auction use cases. Flux Protocol aims to create a new asset standard so digital assets can switch freely between NFT (collectible) and FT (liquid) forms, bringing NFTs into DeFi. Flux represents continuous flow and transformation across forms; the protocol brand is independent of any single NFT IP so more collections can be supported over time.
 
 ---
 
 ## 2. Core Asset Model
 
-整个协议固定存在 `10,000 Asset Units`，每一个 Asset Unit 都对应一个唯一资产。Asset 可以处于三种状态：
+The protocol fixes `10,000 Asset Units`; each unit maps to one unique asset. An asset can be in three states:
 
 ```text
 Credit
@@ -31,19 +33,19 @@ NFT
 FT（10,000 FLUX）
 ```
 
-三者之间的换算关系为：
+Conversion relationships:
 
 ```text
 1 Asset Unit = 1 NFT = 10,000 FLUX
 ```
 
-协议保证 NFT 与 FT 在任何时刻都可以双向转换。
+The protocol guarantees bidirectional NFT ↔ FT conversion at all times.
 
 ---
 
 ## 3. NFT Model
 
-NFT 并不是固定编号资产，其价值来源于 Trait 组合，例如：
+NFTs are not fixed serial assets; value comes from Trait combinations, for example:
 
 ```text
 Hair
@@ -53,36 +55,36 @@ Accessory
 Body
 ```
 
-当 NFT 被 Burn 时，将转换为 `10,000 FLUX`：
+When an NFT is burned, it converts to `10,000 FLUX`:
 
 ```text
 NFT → 10,000 FLUX
 ```
 
-再次转换时，将通过 Random Mint 生成新的 NFT：
+Converting back uses random mint for a new NFT:
 
 ```text
-10,000 FLUX → Random Mint → 新的 NFT
+10,000 FLUX → Random Mint → new NFT
 ```
 
-新的 NFT 将重新生成 Trait。因此，NFT 的价值完全由市场决定，协议无需人为决定“某个 NFT 可以兑换多少 ERC-20”。
+The new NFT rolls fresh Traits. NFT value is entirely market-driven; the protocol does not set “how much ERC-20 one NFT is worth.”
 
 ---
 
 ## 4. Genesis
 
-Genesis 的目标只有两个：
+Genesis has two goals:
 
-1. 完成公平发行（Distribution）。
-2. 完成 LP 建立（Liquidity Bootstrap）。
+1. Fair distribution.
+2. Liquidity bootstrap.
 
-Genesis 完成之后，协议正式开始运行。
+After Genesis, the protocol runs in steady state.
 
 ---
 
 ## 5. Genesis Launch
 
-协议采用 Continuous Clearing Auction（CCA）作为 Genesis。Genesis 共拥有 `10,000 Asset Units`，按 50/50 分配：
+Genesis uses Continuous Clearing Auction (CCA). Genesis has `10,000 Asset Units`, split 50/50:
 
 ```text
 10,000 Units
@@ -90,83 +92,83 @@ Genesis 完成之后，协议正式开始运行。
 └── 5,000 Units → LP Reserve
 ```
 
-Auction 出售 `5,000 Credit`；LP Reserve 转换成 `50,000,000 FLUX`。Auction 募集 ETH 后，协议自动建立 Uniswap LP：
+The auction sells `5,000 Credit`; LP Reserve converts to `50,000,000 FLUX`. After ETH is raised, the protocol creates Uniswap LP:
 
 ```text
 50,000,000 FLUX + Auction ETH → Uniswap LP
 ```
 
-LP 永久锁定。Genesis 完成时，协议已经拥有初始价格、初始 LP 和 ERC-20 流动性，Auction 用户获得 `5,000 Credit`。
+LP is permanently locked. At Genesis completion, the protocol has initial price, initial LP, and ERC-20 liquidity; auction participants receive `5,000 Credit`.
 
 ---
 
 ## 6. Credit
 
-Credit 是 Genesis 阶段存在的临时资产，代表尚未 Materialize 的 Asset。Credit 可以选择转换成 Genesis NFT 或 `10,000 FLUX`：
+Credit is a temporary Genesis-phase asset representing not-yet-materialized Asset Units. Credit can become Genesis NFT or `10,000 FLUX`:
 
 ```text
 Credit → Genesis NFT
 Credit → 10,000 FLUX
 ```
 
-Credit 全部完成转换以后，协议仅保留 NFT 与 FT 两种状态。
+After all Credit is converted, only NFT and FT states remain.
 
 ---
 
 ## 7. Genesis NFT
 
-Genesis NFT 是协议最重要的资产，拥有永久协议权益。它不再只是“带有现金流的 NFT”，而是：
+Genesis NFT is the protocol’s flagship asset with permanent protocol rights. It is not merely “NFT with cash flow” but:
 
 > **Identity + Trait + ERC-6551 Wallet + Genesis fee share + Reward Asset Portfolio**
 
-整个 NFT Collection 都支持 ERC-6551 Token Bound Account（TBA），但只有 Genesis NFT 自动获得协议手续费分成权。TBA 地址由 NFT 身份确定，可按需创建，无需在 Mint 时预部署。TBA 可以持有 ETH、FLUX、Reward Asset Registry 登记的 ERC-20 奖励资产；NFT 转让时，其 TBA 的经济控制权也随 NFT 一起转移。
+The full collection supports ERC-6551 Token Bound Accounts (TBA), but only Genesis NFTs automatically receive protocol fee share. TBA address is determined by NFT identity, created on demand without pre-deploy at mint. TBA can hold ETH, FLUX, and ERC-20 rewards registered in Reward Asset Registry; on NFT transfer, economic control of the TBA moves with the NFT.
 
-Genesis NFT 可以转换成 `10,000 FLUX`，但一旦 Burn，Genesis 身份及未来手续费分成权将永久消失；以后重新 Mint 的 NFT 不会重新获得 Genesis 权益。Burn 必须执行原子化结算：
+Genesis NFT can convert to `10,000 FLUX`, but once burned, Genesis identity and future fee share are gone forever; re-minted NFTs never regain Genesis rights. Burn requires atomic settlement:
 
 ```text
-读取 NFT 对应的 TBA
+Read NFT’s TBA
   ↓
-将协议登记的资产清算给当前 Holder
+Settle protocol-registered assets to current holder
   ↓
-确认结算完成
+Confirm settlement complete
   ↓
 Burn Genesis NFT
   ↓
-Mint 10,000 FLUX 给 Holder
+Mint 10,000 FLUX to holder
   ↓
-永久销毁 Genesis Right
+Permanently destroy Genesis Right
 ```
 
-自动结算范围由 Reward Asset Registry 定义。协议无法枚举用户自行转入的任意资产，因此非登记资产需要由用户自行管理；登记资产以 Native ETH/WETH 与 ERC-20 为主。
+Auto-settlement scope is defined by Reward Asset Registry. The protocol cannot enumerate arbitrary user-deposited assets; non-registered assets are user-managed; registered assets are mainly native ETH/WETH and ERC-20.
 
-因此，Genesis NFT 具有天然稀缺性。Genesis NFT Holder 将永久分享协议的部分手续费收入。Genesis NFT 既代表协议最早的参与者，也是协议第一批 Founders。
+Thus Genesis NFTs are naturally scarce. Holders permanently share part of protocol fees. Genesis NFTs represent earliest participants and the first founders of the protocol.
 
 ---
 
 ## 8. Continuous Clearing Auction (CCA)
 
-Genesis 使用 CCA 完成价格发现。CCA 并不是按投入资金比例分配 Credit；每一个参与者需要提交：
+Genesis uses CCA for price discovery. CCA does not allocate Credit by capital share; each participant submits:
 
-- **Budget**：愿意投入的 ETH。
-- **Max Price**：能够接受的最高成交价格。
+- **Budget**: ETH willing to spend.
+- **Max Price**: highest acceptable clearing price.
 
-拍卖期间，协议持续计算 Clearing Price（统一清算价格）。满足条件的 Bid 成交；当价格超过用户的最高价格时，该 Bid 自动退出。最终，所有成交用户均按照统一价格成交。
+During the auction, the protocol continuously computes clearing price (uniform price). Eligible bids fill; when price exceeds a user’s max, that bid exits. All filled users trade at the same final price.
 
-CCA 的优势包括：
+CCA advantages:
 
-- 无 Gas War
-- 无抢跑
-- 无尾盘狙击
-- 公平价格发现
-- 可直接初始化 LP
+- No gas war
+- No frontrunning
+- No last-block sniping
+- Fair price discovery
+- Direct LP initialization
 
-Genesis Auction 完成以后，该价格直接作为 FLUX/ETH LP 的初始价格。
+After Genesis auction, that price becomes the initial FLUX/ETH LP price.
 
 ---
 
 ## 9. Protocol Lifecycle
 
-Genesis 阶段：
+Genesis phase:
 
 ```text
 CCA Auction
@@ -180,7 +182,7 @@ Credit Distribution
 Protocol Live
 ```
 
-协议上线后：
+After launch:
 
 ```text
 Credit → Genesis NFT → FT → NFT → FT
@@ -190,56 +192,56 @@ Credit → Genesis NFT → FT → NFT → FT
 
 ## 10. NFT / FT Conversion
 
-NFT 与 FT 的转换关系如下：
+Conversion relationships:
 
 ```text
 NFT → 10,000 FLUX
 10,000 FLUX → Random NFT
 ```
 
-协议始终保证 Asset 总量保持恒定。
+Total asset supply stays constant.
 
 ---
 
 ## 11. Target Balance
 
-协议既不追求全部 NFT，也不追求全部 FT，而是希望长期保持以下目标比例：
+The protocol neither targets all NFT nor all FT, but long-term ratio:
 
 ```text
-NFT：60%～70%
-FT： 30%～40%
+NFT: 60%–70%
+FT:  30%–40%
 ```
 
-NFT 负责收藏价值，FT 负责 DeFi 流动性。协议通过动态经济机制，使系统围绕目标区间长期波动。
+NFTs carry collectible value; FTs carry DeFi liquidity. Dynamic economics keep the system oscillating around this band.
 
 ---
 
 ## 12. Dynamic Fee Engine
 
-协议采用双向动态费率，目标不是鼓励某一种资产，而是维持 NFT/FT 的动态平衡：
+The protocol uses bidirectional dynamic fees to maintain NFT/FT balance, not to favor one side:
 
-- 当 FT 高于目标时，鼓励 `FT → NFT`。
-- 当 NFT 高于目标时，鼓励 `NFT → FT`。
-- 在中性区内，双方均可低成本转换。
-- 偏离越大，转换费用越高。
+- When FT is above target, encourage `FT → NFT`.
+- When NFT is above target, encourage `NFT → FT`.
+- In the neutral zone, both directions convert cheaply.
+- Larger deviation, higher conversion cost.
 
-Balance Engine 以连续函数计算 Fee/Reward，而不是固定阶梯。
+Balance Engine computes fee/reward with continuous functions, not fixed steps.
 
 ---
 
 ## 13. Fee Sources
 
-协议共有三种手续费来源：
+Three fee sources:
 
-1. **ERC-20 Swap Fee**：来自 Uniswap 等 AMM。
-2. **NFT Marketplace Fee**：来自 NFT 二级市场，例如 OpenSea 等支持版税或协议费的平台。
-3. **NFT / FT Conversion Fee**：来自协议内部转换，包括动态 Mint Fee。
+1. **ERC-20 Swap Fee**: from Uniswap and other AMMs.
+2. **NFT Marketplace Fee**: from secondary markets (OpenSea etc. supporting royalty or protocol fee).
+3. **NFT / FT Conversion Fee**: from in-protocol conversion, including dynamic mint fees.
 
 ---
 
 ## 14. Fee Engine
 
-所有手续费统一进入 Fee Engine，随后自动分配至四个 Vault：
+All fees enter Fee Engine, then auto-split to four vaults:
 
 ```text
 Fee
@@ -251,13 +253,13 @@ Fee
 
 ### Liquidity Vault
 
-Liquidity Vault 用于持续增加 FLUX/ETH LP 深度。协议运行越久，LP 越深，流动性越稳定。
+Liquidity Vault deepens FLUX/ETH LP over time. Longer runtime yields deeper LP and more stable liquidity.
 
 ### Genesis Vault
 
-Genesis NFT Holder 永久分享协议现金流。Genesis NFT Burn 后将永久失去未来收益权，剩余 Genesis NFT 会自动分享更多现金流。已经领取到 TBA 的资产属于该 NFT；尚未领取但已经归属的奖励，需要在 Burn Settlement 中一并结算。
+Genesis NFT holders permanently share protocol cash flow. After burn, future yield is lost; remaining Genesis NFTs share more. Assets already claimed to TBA belong to that NFT; unclaimed but vested rewards must settle in burn settlement.
 
-Genesis Vault 不再直接向所有 Holder 推送 ETH。它采用 Pull-based Accounting，通过 `accRewardPerShare + rewardDebt` 按奖励资产记录每个 Genesis NFT 的应得份额。Holder 主动 Claim 时，Reward Vault 才将资产转入该 NFT 对应的 ERC-6551 TBA，从而避免随 NFT 数量增长而产生大规模循环转账。
+Genesis Vault no longer pushes ETH to all holders. It uses pull-based accounting with `accRewardPerShare + rewardDebt` per reward asset. Holders claim actively; Reward Vault then sends assets to that NFT’s ERC-6551 TBA, avoiding large loop transfers as NFT count grows.
 
 ```text
 Fee Engine
@@ -275,37 +277,38 @@ ERC-6551 TBA
 
 ### Balance Vault
 
-Balance Vault 负责协议自动调节，目标是长期保持 NFT 占 60%～70%、FT 占 30%～40%。Vault 不固定发放奖励，奖励完全根据当前 Treasury 余额以及 NFT/FT 的偏离程度动态计算。
+Balance Vault auto-regulates toward NFT 60%–70% and FT 30%–40%. Rewards are not fixed; they depend on treasury balance and NFT/FT deviation.
 
-Treasury 越大，奖励越高；Treasury 越小，奖励自动下降。这样可以让 Treasury 持续运行，不会因长期补贴而耗尽。Balance Vault 可根据市场状态鼓励 `NFT → FT` 或 `FT → NFT`，形成协议自动稳定器。
+Larger treasury, higher rewards; smaller treasury, rewards shrink automatically. Treasury can run sustainably without exhausting subsidies. Balance Vault can encourage `NFT → FT` or `FT → NFT` as a stabilizer.
 
 ### Protocol Vault
 
-Protocol Vault 作为协议长期收入，主要用于：
+Protocol Vault is long-term protocol revenue for:
 
-- 开发
+- Development
 - Audit
-- 基础设施
+- Infrastructure
 - Indexer
-- 前端
-- 运营
-这可以保证协议得到持续维护。
+- Frontend
+- Operations
+
+This supports ongoing maintenance.
 
 ### Reward Strategy Engine
 
-Genesis 收益通过可插拔 Reward Strategy 转换为目标 Reward Asset，核心 NFT/FT 转换逻辑不依赖具体买入资产。
+Genesis revenue converts to target reward assets via pluggable Reward Strategy; core NFT/FT conversion does not depend on which asset is bought.
 
 ```text
 RewardStrategyManager
-├── HoldETHStrategy（已实现）
-└── IRewardStrategy 扩展（如 BuyFlux、BuyERC20 等）
+├── HoldETHStrategy (implemented)
+└── IRewardStrategy extensions (e.g. BuyFlux, BuyERC20)
 ```
 
-可拆分资产使用按份额记账与 Claim；不可拆分 NFT 不直接平均分割，而通过独立 Strategy（抽取、拍卖或 NFT Vault 等）处理。
+Fungible assets use per-share accounting and claim; non-fungible NFTs are not split evenly but handled via separate strategies (draw, auction, NFT vault, etc.).
 
 ### Reward Asset Registry
 
-Reward Asset Registry 管理协议允许分发和自动清算的奖励资产。Registry 为 Claim、Accounting 和 Burn Settlement 提供有限、可枚举的资产集合，防止系统尝试扫描 TBA 中未知的任意 Token。
+Reward Asset Registry governs assets the protocol may distribute and auto-settle. It provides a finite enumerable set for claim, accounting, and burn settlement, avoiding scans for unknown tokens in TBA.
 
 ---
 
@@ -323,38 +326,37 @@ ERC-20 Trading
 Protocol Fee
   ↓
 Fee Engine
-  ├── Liquidity Vault → 更深 LP → 更稳定价格
+  ├── Liquidity Vault → deeper LP → stabler price
   ├── Reward Strategy → Reward Vault → ERC-6551 TBA
   └── Balance Vault → Dynamic Incentive → NFT / FT Balance
                                               ↓
-                                          更多交易
+                                          more trading
                                               ↓
-                                           更多 Fee
+                                           more fees
                                               ↓
-                                         协议持续增长
+                                         sustained growth
 ```
 
-协议由此形成完整的经济闭环。
+The protocol forms a complete economic loop.
 
 ---
 
 ## 16. Core Innovations
 
-相比传统 NFT，本协议的主要创新包括：
+Compared with traditional NFTs, main innovations:
 
-- Asset 双形态（NFT / FT）
-- Credit 状态（Genesis）
-- Trait Random Re-Mint
-- CCA Fair Launch
-- 50/50 Genesis Distribution
-- Protocol-Owned Liquidity Bootstrap
-- Genesis NFT 永久现金流权益
+- Dual-form assets (NFT / FT)
+- Credit state (Genesis)
+- Trait random re-mint
+- CCA fair launch
+- 50/50 Genesis distribution
+- Protocol-owned liquidity bootstrap
+- Genesis NFT permanent cash-flow rights
 - ERC-6551 Token Bound Account
-- Reward Asset Portfolio
-- 可插拔 Reward Strategy Engine
-- Reward Asset Registry 与原子化 Burn Settlement
-- Pull-based 多资产奖励记账
-- 双向动态费率
-- 自动平衡引擎（Balance Engine）
-- 四层 Vault 收益分配模型
-
+- Reward asset portfolio
+- Pluggable Reward Strategy Engine
+- Reward Asset Registry and atomic burn settlement
+- Pull-based multi-asset reward accounting
+- Bidirectional dynamic fees
+- Auto-balance engine (Balance Engine)
+- Four-layer vault revenue model
