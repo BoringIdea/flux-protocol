@@ -1,0 +1,48 @@
+{
+  "defaultNetwork": "monad",
+  "networks": {
+    "monad": {
+      "label": "Monad Testnet",
+      "chainId": 10143,
+      "foundryRpcAlias": "monad",
+      "nativeSymbol": "MON",
+      "rpcUrlEnv": "MONAD_TESTNET_RPC_URL",
+      "defaultRpcUrl": "https://testnet-rpc.monad.xyz",
+      "blockExplorer": "https://testnet.monadvision.com",
+      "subgraphNetwork": "monad-testnet",
+      "forgeBroadcastExtraArgs": []
+    },
+    "bsc": {
+      "label": "BSC Testnet",
+      "chainId": 97,
+      "foundryRpcAlias": "bsc",
+      "nativeSymbol": "BNB",
+      "rpcUrlEnv": "BSC_TESTNET_RPC_URL",
+      "defaultRpcUrl": "https://data-seed-prebsc-1-s1.binance.org:8545",
+      "blockExplorer": "https://testnet.bscscan.com",
+      "subgraphNetwork": "chapel",
+      "forgeBroadcastExtraArgs": ["--legacy"]
+    },
+    "hyperliquid": {
+      "label": "HyperEVM Testnet",
+      "chainId": 998,
+      "foundryRpcAlias": "hyperliquid",
+      "nativeSymbol": "HYPE",
+      "rpcUrlEnv": "HYPERLIQUID_TESTNET_RPC_URL",
+      "defaultRpcUrl": "https://rpc.hyperliquid-testnet.xyz/evm",
+      "blockExplorer": "https://testnet.purrsec.com",
+      "subgraphNetwork": "hyperevm-testnet",
+      "forgeBroadcastExtraArgs": []
+    },
+    "local": {
+      "label": "Anvil / Local",
+      "chainId": 31337,
+      "foundryRpcAlias": "local",
+      "nativeSymbol": "ETH",
+      "rpcUrlEnv": "RPC_URL",
+      "defaultRpcUrl": "http://127.0.0.1:8545",
+      "subgraphNetwork": "",
+      "forgeBroadcastExtraArgs": []
+    }
+  }
+}

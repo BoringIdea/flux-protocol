@@ -1,0 +1,41 @@
+[profile.default]
+src = "src"
+test = "test"
+script = "script"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.26"
+optimizer = true
+optimizer_runs = 200
+via_ir = true
+fs_permissions = [{ access = "read-write", path = "./deployments" }]
+
+[profile.default.fuzz]
+runs = 512
+
+[profile.default.invariant]
+runs = 256
+depth = 64
+fail_on_revert = false
+
+# Short aliases for: forge script ... --rpc-url monad|bsc|hyperliquid|local
+# Or use: ./script/flux-forge.sh script ... --network monad --broadcast
+# RPC URLs come from .env (see .env.example and config/networks.json)
+[rpc_endpoints]
+local = "${RPC_URL}"
+monad = "${MONAD_TESTNET_RPC_URL}"
+monad_testnet = "${MONAD_TESTNET_RPC_URL}"
+bsc = "${BSC_TESTNET_RPC_URL}"
+bsc_testnet = "${BSC_TESTNET_RPC_URL}"
+hyperliquid = "${HYPERLIQUID_TESTNET_RPC_URL}"
+hyperliquid_testnet = "${HYPERLIQUID_TESTNET_RPC_URL}"
+bsc_mainnet = "${BSC_MAINNET_RPC_URL}"
+
+[etherscan]
+bsc = { key = "${ETHERSCAN_API_KEY}", url = "https://api.bscscan.com/api" }
+bsc_testnet = { key = "${ETHERSCAN_API_KEY}", url = "https://api-testnet.bscscan.com/api" }
+
+[fmt]
+line_length = 100
+tab_width = 4
+bracket_spacing = true
